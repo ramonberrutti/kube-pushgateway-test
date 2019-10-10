@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-pushgateway-test
+---
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: kube-cronjob-test
+  namespace: kube-pushgateway-test
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: test
+            image: test-cronjob:1.0
+          restartPolicy: OnFailure

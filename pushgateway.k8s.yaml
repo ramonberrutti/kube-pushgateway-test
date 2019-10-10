@@ -1,0 +1,59 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kube-pushgateway-test
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: pushgateway
+  name: pushgateway
+  namespace: kube-pushgateway-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: pushgateway
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: pushgateway
+    spec:
+      containers:
+      - image: prom/pushgateway:v0.9.1
+        imagePullPolicy: IfNotPresent
+        name: pushgateway
+        ports:
+        - containerPort: 9091
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 15Mi
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: pushgateway
+  namespace: kube-pushgateway-test
+  name: pushgateway
+spec:
+  ports:
+    - name: pushgateway-api
+      port: 9091
+      targetPort: 9091
+      protocol: TCP
+  selector:
+    app: pushgateway
+  type: ClusterIP
